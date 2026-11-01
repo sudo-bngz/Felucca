@@ -1,0 +1,39 @@
+# Host tests (no JieLi toolchain): the generated headers, then the ALEA engine's tests, the regression renders and the UI
+# tests in the default, ALEA-less and ADPCM builds. The full suite (tests/run_tests.sh) needs ./build.sh first.
+name: host tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  host:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install Pillow fonttools
+      - name: Generated headers (tools/build.py's generate step)
+        run: |
+          python3 -c "import importlib.util as u; s = u.spec_from_file_location('b', 'tools/build.py'); b = u.module_from_spec(s); s.loader.exec_module(b); b.generate()"
+      - name: Build and run
+        run: |
+          set -e
+          CC="cc -w -Ifirmware/hal -Ifirmware/bsp/chip -Ifirmware/bsp/boards/fm1 -Ifirmware/src -Ibuild/gen"
+          mkdir -p build/host
+          $CC -O1 -o build/host/alea_test tests/alea_test.c -lm && build/host/alea_test
+          $CC -O1 -o build/host/fm6bank_test tests/fm6bank_test.c -lm && build/host/fm6bank_test | tail -1
+          $CC -O2 -o build/host/regress tests/regress.c -lm && build/host/regress tests/golden.txt tests/cpu_baseline.txt
+          for v in "" -DFELUCCA_ALEA=0 -DFELUCCA_ADPCM=1 -DFELUCCA_CPU2=0; do
+            $CC -O1 $v -o build/host/ui_test tests/ui_test.c -lm && build/host/ui_test | tail -1
+            build/host/ui_test > /dev/null
+          done
+      - name: The factory patches, to listen to
+        run: ALEA_WAV=build/host/alea_factory.wav build/host/alea_test
+      - uses: actions/upload-artifact@v4
+        with:
+          name: alea-factory
+          path: build/host/alea_factory.wav

@@ -1,0 +1,14 @@
+// A bass for the FM-1, of the Juno kind: saw + pulse + sub into a resonant
+// low-pass that snaps shut, a little drive. Each edition draws its pulse
+// width and its resonance, so `-n 8` gives eight basses.
+//   alea bass.alea --seed 7 -n 8 --fm1 bass.syx
+
+work Bass {
+  output synth {
+    let env = adsr(attack: 0.004, decay: 0.2, sustain: 0.5, release: 0.15)
+    let f = note.freq
+    drive(lowpass(saw(f) + pulse(f, width: ~between(0.2, 0.4)) * 0.5 + square(f * 0.5) * 0.6,
+                  cutoff: 200 + 2500 * perc(release: ~between(0.15, 0.35)) * note.velocity, resonance: ~between(0.3, 0.6)) * env,
+          amount: 0.25)
+  }
+}

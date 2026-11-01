@@ -1393,6 +1393,8 @@ static void set_engine_of(track_t *t, uint32_t ei)
 {
     const engine_t *e = ENGINES[ei % NENGINES];
     uint32_t i;
+    if (!ENG_STORED_OK(ei % NENGINES))               /* (14 in an ALEA build without ADPCM: nothing there) */
+        return;
 #if !FELUCCA_FM4
     if (ei % NENGINES == ENGI_DIGITAL) {             /* DIGITAL (retired): its first preset, as FM6 */
         fm4_load_preset(t, 0);
