@@ -47,6 +47,27 @@ static uint8_t eng_mem_owner[NPART];       /* engine index + 1 whose state is in
 #if FELUCCA_ADPCM
 #include "eng_adpcm.c"           /* ADPCM: BRR waves and an FIR echo, its DSP ported from snes_spc (adpcm_dsp.c, LGPL-2.1+) */
 #endif
+#if FELUCCA_ALEA
+#include "eng_alea.c"            /* ALEA: patches written in alea (alea/alea_vm.h, MIT), a bank sent over USB */
+#if !FELUCCA_ADPCM
+/* engine 14 in an ALEA build without ADPCM: never selectable (eng_ok), no presets, silent */
+static void eng_gone_note_on(struct track *t, voice_t *v) { (void)t; (void)v; }
+static void eng_gone_render(struct track *t, voice_t *v, int32_t *out, uint32_t n, const vmod_t *m)
+{
+    (void)t; (void)v; (void)out; (void)n; (void)m;
+}
+static const engine_t ENG_ADPCM_GONE = {
+    .name = "-",
+    .page_title = {"-", "-"},
+    .edit = {{"-", F_INT, 0, 0, 0, 0, 0}, {"-", F_INT, 0, 0, 0, 0, 0}, {"-", F_INT, 0, 0, 0, 0, 0},
+             {"-", F_INT, 0, 0, 0, 0, 0}, {"-", F_INT, 0, 0, 0, 0, 0}, {"-", F_INT, 0, 0, 0, 0, 0},
+             {"-", F_INT, 0, 0, 0, 0, 0}, {"-", F_INT, 0, 0, 0, 0, 0}},
+    .note_on = eng_gone_note_on,
+    .render = eng_gone_render,
+    .knob = {P_E0, P_E1, P_E2, P_REL},
+};
+#endif
+#endif
 
 /* the editor protocol, user presets and projects store these indices: append, never reorder */
 static const engine_t *const ENGINES[NENGINES] = {
@@ -72,6 +93,11 @@ static const engine_t *const ENGINES[NENGINES] = {
 #endif
 #if FELUCCA_ADPCM
     &ENG_ADPCM,                  /* 14 (ENGI_ADPCM; FELUCCA_ADPCM=0 builds without it) */
+#elif FELUCCA_ALEA
+    &ENG_ADPCM_GONE,             /* 14: reserved (ADPCM, not built) */
+#endif
+#if FELUCCA_ALEA
+    &ENG_ALEA,                   /* 15 (ENGI_ALEA; FELUCCA_ALEA=0 builds without it) */
 #endif
 };
 
@@ -136,11 +162,17 @@ static const uint8_t ENGINE_ORDER[NENG_SHOWN] = {
 #if FELUCCA_ADPCM
     14,                          /* ADPCM (1.8): last, so the EDIT layer's white keys keep the 13 above (ui_layer.c LY_ENG_KEYS) */
 #endif
+#if FELUCCA_ALEA
+    15,                          /* ALEA: after them, for the same reason (PRESETS' ENG knob picks it) */
+#endif
 };
 
 /* the engines one can pick (engine 1 only with FELUCCA_FM4), in ENGINE_ORDER: eng_ok(e), the n-th of them
  * eng_vis(n), e's place among them eng_rank(e), the next / previous one eng_step(e, dir) (wraps) */
-static int eng_ok(uint32_t e) { return e < NENGINES && (FELUCCA_FM4 || e != ENGI_DIGITAL); }
+static int eng_ok(uint32_t e)
+{
+    return e < NENGINES && (FELUCCA_FM4 || e != ENGI_DIGITAL) && (FELUCCA_ADPCM || e != ENGI_ADPCM);
+}
 static uint32_t eng_vis(uint32_t n) { return ENGINE_ORDER[n % NENG_SHOWN]; }
 static uint32_t eng_rank(uint32_t e)
 {

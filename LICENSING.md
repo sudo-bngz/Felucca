@@ -45,6 +45,12 @@ MPL-2.0 too: a port of charlesvestal's fm1-base (<https://github.com/charlesvest
 `lib/touch.c`, MPL-2.0). The firmware built with them is GPL-3.0-only as a whole; the MPL files stay MPL-2.0, and
 their source is part of Felucca's complete source as the engines' is.
 
+The ALEA engine's interpreter, `firmware/src/alea/alea_vm.h` and `alea_vm_tables.h`, is part of alea
+(<https://github.com/sudo-bngz/alea>, `fm1/`), by sudo-bngz and the alea contributors, under the MIT licence
+(`SPDX-License-Identifier: MIT`, `LICENSES/MIT-alea.txt`). The engine around it (`eng_alea.c`, `alea_bank.c`, `editor_alea.c`, `alea_factory.h`,
+`tools/gen_alea_factory.py`, `tests/alea_test.c`) is GPL-3.0-only; the factory patches in `assets/alea/` are alea
+examples (MIT) and the banks compiled from them.
+
 You may use, study, change and share Felucca under the GPL. If you distribute Felucca, or
 firmware derived from it, you must also give your recipients its complete corresponding
 source under the same licence. That includes devices that ship with modified Felucca inside.

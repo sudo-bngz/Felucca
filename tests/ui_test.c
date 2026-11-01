@@ -4127,7 +4127,7 @@ static int test_quick_layers(void)
     }
     btn_up(B_EDIT); frame();
     bad += check("  the first 13 engines in PRESETS order have their white keys from F3 (ADPCM, the 14th, only with ENG; never DIGITAL)",
-                 ok && a == LY_INIT && LY_INIT == NENG_SHOWN - FELUCCA_ADPCM);
+                 ok && a == LY_INIT && LY_INIT == NENG_SHOWN - FELUCCA_ADPCM - FELUCCA_ALEA);   /* (ALEA, after ADPCM: the same) */
     set_engine_of(TSEL, 0);
     lay_combo(B_EDIT, white(eng_rank(3))); key_up(white(eng_rank(3))); frame();
     turn(EN_K2, 1);
@@ -5098,7 +5098,8 @@ static int test_fm6_charts(void)
 static int test_fm4_retired(void)
 {
     int bad = 0, ok = 1;
-    uint32_t i, k, e, total, seen = 0, all = ((1u << NENGINES) - 1u) & ~(1u << ENGI_DIGITAL);
+    uint32_t i, k, e, total, seen = 0, all = ((1u << NENGINES) - 1u) & ~(1u << ENGI_DIGITAL) &
+                                                            ~(FELUCCA_ALEA && !FELUCCA_ADPCM ? 1u << ENGI_ADPCM : 0u);   /* (14 reserved) */
     int16_t p[P_COUNT];
     uint8_t v[FP_SIZE + 1u];
     ui_power_on();
@@ -5110,7 +5111,7 @@ static int test_fm4_retired(void)
         if (e < NENGINES)
             seen |= 1u << e;
     }
-    bad += check("PRESETS: the list holds every engine's presets but DIGITAL's", seen == all && NENG_SHOWN == NENGINES - 1u);
+    bad += check("PRESETS: the list holds every engine's presets but DIGITAL's", seen == all && NENG_SHOWN == NENGINES - 1u - (FELUCCA_ALEA && !FELUCCA_ADPCM));
     go_page(GR_BROWSE);
     set_engine_of(TSEL, 0);
     for (i = 0, seen = 0; i < NENG_SHOWN; i++) {
@@ -5119,12 +5120,15 @@ static int test_fm4_retired(void)
     }
     bad += check("PRESETS KNOB 2: the engines in order, DIGITAL skipped, back to the first",
                  seen == all && TSEL->eng_req == 0u && eng_step(0, 1) == ENGI_FM6 && eng_step(ENGI_FM6, 1) == 2u &&
-                 eng_step(ENGI_FM6, -1) == 0u && eng_step(0, -1) == (FELUCCA_ADPCM ? ENGI_ADPCM : ENGI_DRUM));
+                 eng_step(ENGI_FM6, -1) == 0u && eng_step(0, -1) == (FELUCCA_ALEA ? ENGI_ALEA : FELUCCA_ADPCM ? ENGI_ADPCM : ENGI_DRUM));
     {   /* the display order (engines.c ENGINE_ORDER): every engine one can pick once; the PRESETS list follows it */
         static const char *const ORDER[] = {"ANALOG", "FM6", "PHASE", "LOFI", "SAMPLE", "VOICE", "TRIO", "WHEEL", "GRAIN",
                                             "PHYS", "NOISE", "SLICE", "DRUM",
 #if FELUCCA_ADPCM
                                             "ADPCM",
+#endif
+#if FELUCCA_ALEA
+                                            "ALEA",
 #endif
         };
         uint32_t last = 0xFFu, r = 0, n = 0;

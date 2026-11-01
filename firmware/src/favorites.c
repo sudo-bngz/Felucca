@@ -23,6 +23,12 @@ static uint8_t *fav_bit(uint32_t engine, uint32_t preset, uint8_t *mask)   /* th
         return &favorites.factory[15][13];
     }
 #endif
+#if FELUCCA_ALEA
+    if (engine == ENGI_ALEA && preset < 8u) {          /* ALEA (sudo-bngz's fork): factory[15][25], no firmware's before */
+        *mask = (uint8_t)(1u << preset);
+        return &favorites.factory[15][25];
+    }
+#endif
     return 0;
 }
 static int favorite_has(uint32_t engine, uint32_t preset)

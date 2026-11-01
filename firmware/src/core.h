@@ -35,12 +35,23 @@
 #if FELUCCA_ADPCM && !FELUCCA_SLICE
 #error "FELUCCA_ADPCM needs FELUCCA_SLICE (ADPCM is engine 14, after SLICE)"
 #endif
-#define NENGINES (13 + FELUCCA_SLICE + FELUCCA_ADPCM)   /* SLICE (13), then ADPCM (14): the other engines keep their
-                                                         * numbers */
+#ifndef FELUCCA_ALEA
+#define FELUCCA_ALEA 1           /* the ALEA engine (eng_alea.c), engine 15: patches written in alea, sent over USB */
+#endif
+#if FELUCCA_ALEA && !FELUCCA_SLICE
+#error "FELUCCA_ALEA needs FELUCCA_SLICE (ALEA is engine 15, after SLICE and ADPCM's 14)"
+#endif
+#define NENGINES (FELUCCA_ALEA ? 16 : 13 + FELUCCA_SLICE + FELUCCA_ADPCM)   /* SLICE (13), then ADPCM (14), ALEA (15): the
+                                                         * other engines keep their numbers (14 reserved in an ALEA build
+                                                         * without ADPCM) */
 #define ENGI_ADPCM 14u
+#define ENGI_ALEA 15u
+/* an engine number a project, a user preset or the editor may hold: below NENGINES, and not the reserved 14 of an ALEA
+ * build without ADPCM (what a build without the engine does with an ADPCM project: refuses it) */
+#define ENG_STORED_OK(e) ((uint32_t)(e) < NENGINES && (FELUCCA_ADPCM || !FELUCCA_ALEA || (uint32_t)(e) != ENGI_ADPCM))
 #define ENGI_DIGITAL 1u          /* reserved without FELUCCA_FM4: never selectable (eng_ok), its sounds load as FM6 */
-#define NENG_SHOWN (NENGINES - !FELUCCA_FM4)   /* the engines one can pick: PRESETS, the EDIT layer, the editor,
-                                                * in the display order of engines.c ENGINE_ORDER */
+#define NENG_SHOWN (12 + FELUCCA_FM4 + FELUCCA_SLICE + FELUCCA_ADPCM + FELUCCA_ALEA)   /* the engines one can pick: PRESETS,
+                                                * the EDIT layer, the editor, in the display order of engines.c ENGINE_ORDER */
 #define UP_SLOTS 32u             /* user presets (upreset.c) */
 
 /* ------------------------------------------------------- parameters --- */

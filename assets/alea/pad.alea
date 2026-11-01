@@ -1,0 +1,12 @@
+// A pad for the FM-1: three saws a little apart, a filter that opens with
+// the velocity, chorus. Slow to come, slow to go.
+//   alea pad.alea --seed 1 -n 4 --fm1 pad.syx
+
+work Pad {
+  output synth {
+    let env = adsr(attack: ~between(0.4, 1.2), decay: 0.5, sustain: 0.8, release: ~between(1, 2))
+    let f = note.freq
+    let osc = saw(f) + saw(f * ~around(1.006, 0.002)) + saw(f * ~around(0.995, 0.002)) + sine(f * 0.5) * 0.4
+    chorus(lowpass(osc, cutoff: 300 + 2500 * note.velocity, resonance: 0.2) * env * 0.4, depth: 0.7, rate: 0.5)
+  }
+}

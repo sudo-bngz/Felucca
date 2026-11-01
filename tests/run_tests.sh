@@ -50,6 +50,10 @@
 #                   autosave kept), a wrong CRC, an autosave between requests, SLOT B1..B32 loading the exact records,
 #                   empty bank slots skipped / refused, projects and user presets keeping a bank voice, stored SLOT values
 #                   (projects, user presets, motion) loading as before.
+# ALEA (tests/alea_test.c): the ALEA engine (src/eng_alea.c), its bank (src/alea_bank.c) and editor commands (96..99)
+#                   against simulated NOR: the factory bank, a bank written and read back at 0xE8000 (nothing else
+#                   touched), a power cut after any programmed byte, a wrong CRC, a bank that does not load; the voice
+#                   sample for sample as alea/alea_vm.h plays it, its pitch, a new bank while a note rings, the lines.
 # CHORD (tests/chord_test.c): the chord keys (src/chord.c): diatonic triads / sevenths of several scales and roots,
 #                   the fixed shapes and voicings (at most 4 notes), names, MONO plays the root, a release ends
 #                   exactly what its key / MIDI note started, recording, the ARP, MIDI IN, kits ignore CHRD.
@@ -363,6 +367,9 @@ if [ -f build/gen/felucca_tables.h ]; then
     run "full backup: CRC before writes, stale runtime, USB reset / timeout, malformed objects, older projects" "$OUT/backup_test"
     $CC -w -Ibuild/gen -Ifirmware/src -o "$OUT/fm6bank_test" tests/fm6bank_test.c -lm
     run "FM6 voice bank (1.4.1): write / read, power cuts, CRC, SLOT B1..B32, stored SLOT values as before" "$OUT/fm6bank_test"
+    $CC -w -Ibuild/gen -Ifirmware/src -o "$OUT/alea_test" tests/alea_test.c -lm
+    run "ALEA: its bank over the editor (0xE8000, power cuts, CRC), the factory bank, the voice as alea_vm.h plays it, lines" \
+        "$OUT/alea_test"
     $CC -w -Ibuild/gen -Ifirmware/src -o "$OUT/editor_test" tests/editor_test.c -lm
     run "editor: real C protocol, malformed transfers, queue recovery, MENU settings (writes build/host/menu.json)" \
         env MENU_JSON="$OUT/menu.json" "$OUT/editor_test"

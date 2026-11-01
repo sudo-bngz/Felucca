@@ -2,6 +2,14 @@
 
 [![License: GPL-3.0-only](https://img.shields.io/badge/license-GPL--3.0--only-blue.svg)](LICENSE)
 
+> **This fork** adds the **ALEA** engine: patches written in [alea](https://github.com/sudo-bngz/alea), a language for
+> generative art, played by the FM-1. A `synth { … }` compiled with `alea work.alea -n 8 --fm1 bank.syx` becomes a bank
+> of up to 16 patches (each edition of the work one of them); [alea.bngz.io/fm1.html](https://alea.bngz.io/fm1.html)
+> sends it over USB. Pick ALEA (PRESETS' ENG knob, after the other engines); EDIT 1 > PATCH chooses the patch. Without
+> a bank the engine plays four factory patches (BASS, PAD, BELL, STAB). Details: `firmware/src/eng_alea.c`,
+> [BUILDING.md](BUILDING.md) (`FELUCCA_ALEA`), [web/EDITOR_PROTOCOL.md](web/EDITOR_PROTOCOL.md) "ALEA bank". Not
+> tested on hardware yet: keep the recovery path at hand before flashing a build of it.
+
 ## Overview
 
 Felucca is an open-source synthesizer firmware project that began as custom firmware for the M-VAVE FM-1.

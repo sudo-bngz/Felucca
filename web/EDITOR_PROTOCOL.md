@@ -951,6 +951,29 @@ the device's autosave took the transfer's flash between two requests, after 10 s
   its range); an empty slot of a shorter file is not written. Flash: the bank is at 0xE7000; a transfer is staged in
   the autosave's older sector first (0xE5000 / 0xE6000), which the next autosave writes over anyway.
 
+## ALEA bank (96-99; the ALEA engine)
+
+The bank of the ALEA engine (engine 15, `FELUCCA_ALEA`, `firmware/src/eng_alea.c`): up to 16 patches written in
+[alea](https://github.com/sudo-bngz/alea) and compiled by `alea work.alea --fm1 bank.syx`, whose `.syx` holds exactly
+these requests (BEGIN, the WRITEs, END). alea's `fm1/send.html` (Web MIDI) and `fm1/send.py` send them, each after the
+reply to the one before. The bank's bytes are alea's `ALB1` (alea's `fm1/FORMAT.md`), at most 3584 of them. Values are
+7-bit bytes, the low bits first.
+
+| cmd | Request args | Reply args |
+| --- | --- | --- |
+| 96 ALEA_BEGIN | size (3 × 7 bits): 1..3584; 0 erases the stored bank | rc. Starts a transfer (stops the transport; erases a sector: allow 1 s). Size 0: the factory bank plays from then on |
+| 97 ALEA_WRITE | offset (3 × 7 bits), then the bytes packed 7 to 8 (each group of up to 7 bytes after a byte of their high bits, bit k for byte k), at most 256 bytes | offset (3 × 7 bits), rc. In order: the offset is the bytes written so far |
+| 98 ALEA_END | CRC-32 (zlib's) of the whole bank (5 × 7 bits) | rc, patches (in the bank the engine plays now). rc 0: stored and played at once (allow 1 s) |
+| 99 ALEA_LIST | — | stored (1: a bank sent over USB, 0: the factory bank), patches, then per patch its name string |
+
+rc: 0 ok, 1 arguments (a size over 3584, a WRITE out of order or past the size, a malformed pack), 2 the CRC did not
+match or bytes are missing, 3 playback did not stop, or (END) the bytes are not a bank the engine plays (a patch that
+does not load), 4 flash, 5 no transfer.
+
+- BEGIN erases the stored bank (flash 0xE8000): the engine plays the bank it had until END answers 0. A power cut or a
+  transfer left unfinished leaves no stored bank: the factory one plays at the next power-on, never half a bank.
+- A track on ALEA plays EDIT 1 PATCH of the new bank from the next audio block; past the bank's last patch, its last.
+
 ## MIDI LEARN (78-79; 1.5)
 
 The device can set a controller's CC to any knob's parameter of a track (Discussion #170): GLO + D4 turns MIDI LEARN

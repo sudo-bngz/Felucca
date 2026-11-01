@@ -351,6 +351,7 @@ static int ed_flash_stop(void)
 #include "editor_preferences.c"
 #include "editor_backup.c"
 #include "editor_fm6.c"
+#include "editor_alea.c"
 #include "editor_menu.c"
 #include "editor_learn.c"                    /* 1.5: MIDI LEARN's map (cmds 78, 79) */
 #include "editor_palette.c"                  /* 1.6: CUSTOM, the user's palette (cmds 80, 81) */
@@ -436,12 +437,13 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
     if (!ed_args_ok(cmd, a, na))
         return;
     if ((cmd >= ED_SMP_BEGIN && cmd <= ED_SMP_INFO) || (cmd >= ED_BACKUP_LIST && cmd <= ED_BACKUP_PUT) ||
-        (cmd >= ED_FM6B_BEGIN && cmd <= ED_FM6B_END))
+        (cmd >= ED_FM6B_BEGIN && cmd <= ED_FM6B_END) || (cmd >= 96u && cmd <= 98u))   /* (96..98: ALEA's bank) */
         autosave_hold();                                /* (a transfer: no autosave meanwhile, project.c) */
     ed_begin(cmd);
     if (ed_ui_handle(cmd, a, na)) { ed_send(); return; }
     if (ed_backup_handle(cmd, a, na)) { ed_send(); return; }
     if (ed_fm6_handle(cmd, a, na)) { ed_send(); return; }
+    if (ed_alea_handle(cmd, a, na)) { ed_send(); return; }
     if (ed_menu_handle(cmd, a, na)) { ed_send(); return; }
     if (ed_learn_handle(cmd, a, na)) { ed_send(); return; }
     if (ed_palette_handle(cmd, a, na)) { ed_send(); return; }

@@ -107,7 +107,7 @@ static void up_set_cat(up_rec_t *r, uint32_t c)  /* c CAT_BASS..CAT_OTHER; a rec
 
 static int up_valid(const up_rec_t *r)
 {
-    if (!(r->used == UP_USED && r->ver >= 1u && r->ver <= UP_VER_GRID && r->engine < NENGINES &&
+    if (!(r->used == UP_USED && r->ver >= 1u && r->ver <= UP_VER_GRID && ENG_STORED_OK(r->engine) &&
           r->np >= 8u && r->np <= (r->ver >= 4u ? UP_PMAX * 2u : UP_PMAX) && r->name[0])) return 0;
     if (r->ver >= 4u) for (uint32_t i = 0; i < r->np; i++) if (r->packed[i] > 191u) return 0;
     return 1;
@@ -228,7 +228,7 @@ static int up_parse(const uint8_t *a, uint32_t na, up_rec_t *r, uint32_t *slot)
         ;
     k = 3u + n;                                  /* after the name's 0 */
     end = k + 2u * P_COUNT + 32u;
-    if (a[0] >= UP_SLOTS || a[1] >= NENGINES || 2u + n >= na || !up_name_ok(a + 2, n) ||
+    if (a[0] >= UP_SLOTS || !ENG_STORED_OK(a[1]) || 2u + n >= na || !up_name_ok(a + 2, n) ||
         (na != end && ((na != end + 17u && na != end + 18u) || a[end] > 1u)) || (na == end + 18u && a[end + 17u] >= CAT_N))
         return 1;
     up_rec_t staged, *target = r;
@@ -286,6 +286,7 @@ static void up_values(const up_rec_t *r, int16_t *v)   /* mapped and clamped for
 
 #include "up_fm6.c"                            /* the FM6 user presets' patches: the same kind of store */
 #include "fm6_vbank.c"                         /* FM6's voice bank (SLOT B1..B32, 1.4.1) */
+#include "alea_bank.c"                         /* ALEA's bank (0xE8000) */
 
 static void up_boot(void)                      /* persist_boot: the banks from flash */
 {
@@ -296,6 +297,9 @@ static void up_boot(void)                      /* persist_boot: the banks from f
 #endif
     upf_boot();                                  /* (after the banks: it may move the retired FM6 bank's patches) */
     fvb_boot();                                  /* FM6's voice bank: a staged one finished, its voices */
+#if FELUCCA_ALEA
+    alea_boot();                                 /* ALEA's bank, or its factory one */
+#endif
 #ifdef FELUCCA_FAVORITES
     for (uint32_t k = 0; k < UP_SLOTS; k++)
         if (!up_used(k)) favorite_set(NENGINES, k, 0);

@@ -81,6 +81,7 @@ Build options (environment, `0` or `1`; defaults in `firmware/src/felucca.c`, `c
 | `FELUCCA_ICONS` | 1 | parameter icons on the knob cards |
 | `FELUCCA_FM4` | 0 | the retired DIGITAL engine (4-operator FM) instead of its FM6 conversion |
 | `FELUCCA_ADPCM` | 0 | the ADPCM engine (engine 14, `firmware/src/eng_adpcm.c`): kept in the tree, not built by default. On the FM-1 one of its voices costs about three ANALOG voices (8 voices on one part: 54 % CPU, against 17 % for ANALOG; on all four parts the audio drops out); the figures are in `eng_adpcm.c` |
+| `FELUCCA_ALEA` | 1 | the ALEA engine (engine 15, `firmware/src/eng_alea.c`): patches written in [alea](https://github.com/sudo-bngz/alea), a bank of them sent over USB (`web/EDITOR_PROTOCOL.md` "ALEA bank"), kept at flash 0xE8000; needs `FELUCCA_SLICE`. `ALEA_SHARED` in that file (bytes, default 16384) sizes the delay and chorus lines one part may borrow |
 
 `FELUCCA_USB_LAYOUT` (`0` to `3`, default `0`) picks other USB descriptor layouts for testing; see
 `firmware/src/usb.c`.

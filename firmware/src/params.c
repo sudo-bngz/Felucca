@@ -80,8 +80,14 @@ static const char *const N_ENGNAME[] = {"ANALOG", FELUCCA_FM4 ? "DIGITAL" : "-",
 #endif
 #if FELUCCA_ADPCM
                                              "ADPCM",
+#elif FELUCCA_ALEA
+                                             "-",               /* 14: reserved (ADPCM not built: never picked, ui.c set_engine_of) */
+#endif
+#if FELUCCA_ALEA
+                                             "ALEA",
 #endif
 };
+_Static_assert(NELEM(N_ENGNAME) == NENGINES, "an engine name per engine number");
 
 static const char *const N_SLOT[] = {"A", "B", "C", "D", 0};   /* G_SLOT 1..4 (F_INT: the names split its range) */
 #define PD(l, f, mn, mx, df) {l, f, mn, mx, df, 0, 0}

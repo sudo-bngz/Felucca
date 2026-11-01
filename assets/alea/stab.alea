@@ -1,0 +1,13 @@
+// A dub chord stab for the FM-1: two pulses a hair apart through a band-pass
+// that closes fast. The echoes are Felucca's: send it to the DELAY (factory
+// preset ALEA 4 does).
+//   alea stab.alea --seed 2 -n 4 --fm1 stabs.syx
+
+work Stab {
+  output synth {
+    let f = note.freq
+    let body = pulse(f, width: ~between(0.25, 0.45)) + pulse(f * 1.003, width: 0.5) * 0.7
+    bandpass(body, cutoff: ~between(700, 1400) + 1800 * perc(release: 0.06) * note.velocity, resonance: ~between(0.4, 0.7))
+      * perc(attack: 0.002, release: ~between(0.18, 0.3)) * 1.6
+  }
+}
