@@ -16,6 +16,7 @@
  * note-on when a slab is free (one patch's lines, ALEA_SLABS at most a part), else it plays its delays and choruses
  * dry: what fits is printed by `alea --fm1` (src/fm1.rs ALEA_PART_LINES). */
 
+#define ALEA_NO_STRING_H                 /* (the firmware is freestanding: bsp/chip/libc.c) */
 #include "alea/alea_vm.h"
 
 #ifndef ALEA_SHARED

@@ -20,7 +20,9 @@
 #ifndef ALEA_VM_H
 #define ALEA_VM_H
 #include <stdint.h>
+#ifndef ALEA_NO_STRING_H                 /* (a freestanding host, Felucca: its own memset / memcpy / memcmp) */
 #include <string.h>
+#endif
 
 #ifndef ALEA_FS
 #define ALEA_FS 44100u
